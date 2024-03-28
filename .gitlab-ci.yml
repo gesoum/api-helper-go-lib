@@ -39,3 +39,24 @@ coverage:
   coverage: "/\\(statements\\)\\s+\\d+.?\\d+%/"
   only:
     - main
+
+publish:
+  stage: test
+  needs: ["coverage", "test"]
+  script:
+    - echo "Pages accessible through:"
+    - echo $CI_PAGES_URL
+    - echo $PAGES_PREFIX
+    - echo 'Cleaning old pages'
+    - rm -rf public
+    - ls -la
+    - mkdir -p public/test-report && cp coverage-report.html public/test-report
+    - echo 'Public directory content after copying files'
+    - ls -la ./public
+  artifacts:
+    paths:
+      - public
+    expire_in: 1 hour
+  only:
+    - main
+
