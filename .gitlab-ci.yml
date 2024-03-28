@@ -1,0 +1,41 @@
+image: golang:1.22
+
+# Static Application Security Testing (SAST) is a frequently used Application Security (AppSec) tool,
+# which scans an application’s source, binary, or byte code.
+# https://www.microfocus.com/en-us/what-is/sast
+include:
+  - template: Security/SAST.gitlab-ci.yml
+
+stages:
+  - test
+
+test:
+  stage: test
+  before_script:
+    - go version
+    - echo $CI_BUILD_REF
+    - echo $CI_PROJECT_DIR
+  coverage: '/total:\s+\(statements\)\s+(\d+.\d+\%)/'
+  script:
+    - echo "Running tests"
+    - go get -v -d ./...
+    - go test -v -coverprofile .coverage -race -timeout 30s ./...
+    - go tool cover -func .coverage
+  only:
+    - main
+
+coverage:
+  stage: test
+  script:
+    - CGO_ENABLED=0 go test ./... -coverprofile=coverage-report.out
+    - go tool cover -html=coverage-report.out -o coverage-report.html
+    # This option allows you open a browser and check results directly: go tool cover -html=coverage-report.out
+    # You can combine test & cover commands: go test ./... -coverprofile=coverage-report.out && go tool cover -html=coverage-report.out
+    - go tool cover -func=coverage-report.out
+  artifacts:
+    paths:
+      - coverage-report.html
+    expire_in: 1 hour
+  coverage: "/\\(statements\\)\\s+\\d+.?\\d+%/"
+  only:
+    - main
