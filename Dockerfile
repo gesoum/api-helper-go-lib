@@ -1,6 +1,6 @@
 FROM golang:1.22
 
-WORKDIR /go/src/github.com/samber/lo
+WORKDIR /go/src/api-helper
 
 COPY Makefile go.* ./
 
